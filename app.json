@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Fajr Companion",
+    "slug": "fajr-companion",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FDF7F5"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fajrcompanion.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Used to calculate your local Fajr prayer time.",
+        "NSCameraUsageDescription": "Used to take a photo of your prayer mat as wake-up verification.",
+        "NSMicrophoneUsageDescription": "Required by camera."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FDF7F5"
+      },
+      "package": "com.fajrcompanion.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      ["expo-notifications", { "color": "#7C3D52" }],
+      ["expo-location", {
+        "locationWhenInUsePermission": "Allow Fajr Companion to use your location to calculate prayer times."
+      }],
+      "expo-image-picker",
+      "expo-font",
+      "expo-splash-screen"
+    ]
+  }
+}
