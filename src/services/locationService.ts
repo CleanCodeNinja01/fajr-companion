@@ -1,6 +1,7 @@
 // Handle location permission, geocoding, and city search
 import * as Location from 'expo-location';
 import { Linking, Platform } from 'react-native';
+import tzlookup from 'tz-lookup';
 import { CitySuggestion, LocationData } from '../types';
 
 const NOMINATIM_HEADERS = {
@@ -62,12 +63,37 @@ function isValidCityResult(item: Record<string, unknown>): boolean {
   return false;
 }
 
-export function suggestionToLocation(suggestion: CitySuggestion): LocationData {
+/** Last segment of a Nominatim display name is often the country. */
+export function inferCountryFromCityName(cityName?: string): string | undefined {
+  if (!cityName) return undefined;
+  const parts = cityName.split(',').map(s => s.trim()).filter(Boolean);
+  return parts.length > 1 ? parts[parts.length - 1] : undefined;
+}
+
+export function timezoneForCoordinates(latitude: number, longitude: number): string {
+  try {
+    return tzlookup(latitude, longitude);
+  } catch {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+}
+
+/** Ensure timezone is set from coordinates (for saved locations missing it). */
+export function withTimezone(loc: LocationData): LocationData {
+  if (loc.timezone) return loc;
   return {
+    ...loc,
+    timezone: timezoneForCoordinates(loc.latitude, loc.longitude),
+  };
+}
+
+export function suggestionToLocation(suggestion: CitySuggestion): LocationData {
+  return withTimezone({
     latitude: suggestion.latitude,
     longitude: suggestion.longitude,
     cityName: suggestion.displayName,
-  };
+    country: suggestion.country,
+  });
 }
 
 export async function getLocationPermissionStatus(): Promise<'granted' | 'denied' | 'undetermined'> {
@@ -127,6 +153,7 @@ export async function getCurrentLocation(options?: { fresh?: boolean }): Promise
   const { latitude, longitude } = loc.coords;
 
   let cityName: string | undefined;
+  let country: string | undefined;
   try {
     const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });
     cityName =
@@ -135,6 +162,7 @@ export async function getCurrentLocation(options?: { fresh?: boolean }): Promise
       place?.region ??
       place?.district ??
       undefined;
+    country = place?.country ?? undefined;
   } catch {
     // fall back to coordinates-only label below
   }
@@ -143,7 +171,7 @@ export async function getCurrentLocation(options?: { fresh?: boolean }): Promise
     cityName = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
   }
 
-  return { latitude, longitude, cityName };
+  return withTimezone({ latitude, longitude, cityName, country });
 }
 
 /** Search cities worldwide via OpenStreetMap Nominatim (no API key). */

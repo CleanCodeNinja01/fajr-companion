@@ -6,7 +6,7 @@ export const DEFAULT_ALARM_SETTINGS: AlarmSettings = {
   snoozeEnabled: true,
   maxSnoozes: 3,
   soundType: 'adhan',
-  calculationMethod: 'NorthAmerica',
+  calculationMethod: 'Karachi',
 };
 
 export const DEFAULT_STREAK: StreakData = {
@@ -31,4 +31,4 @@ export const WAKE_OFFSETS: { value: 0 | 15 | 30 | 45; label: string }[] = [
   { value: 45, label: '45 min before' },
 ];
 
-// Adhan audio is streamed at runtime from ADHAN_SOURCES in AlarmRingingScreen.tsx
+// Makkah Fajr adhan (Masjid al-Haram) bundled in assets/adhan.mp3

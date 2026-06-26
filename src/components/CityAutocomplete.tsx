@@ -65,6 +65,13 @@ export default function CityAutocomplete({
     onSelect(suggestion);
   }
 
+  function handleClear() {
+    onChangeText('');
+    setSuggestions([]);
+    setSearchError(null);
+    setSearching(false);
+  }
+
   return (
     <View style={styles.wrap}>
       <View style={styles.inputRow}>
@@ -81,6 +88,15 @@ export default function CityAutocomplete({
           autoFocus
         />
         {searching && <ActivityIndicator size="small" color={Colors.accent} />}
+        {value.length > 0 && (
+          <TouchableOpacity
+            onPress={handleClear}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Clear search"
+          >
+            <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {suggestions.length > 0 && (

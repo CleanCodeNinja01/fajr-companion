@@ -11,6 +11,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Colors } from '../constants/Colors';
 import { RootStackParamList } from '../types';
 import { useStreak } from '../hooks/useStreak';
+import StarfieldBackground from '../components/StarfieldBackground';
+
+const CARD_BG  = '#1E0F14';
+const CARD_BDR = '#3D2030';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'PrayerMatScan'> };
 
@@ -49,6 +53,7 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <StarfieldBackground />
       {/* Camera viewfinder area */}
       <View style={styles.viewfinder}>
         <TouchableOpacity style={styles.cameraBtn} onPress={takePhoto} activeOpacity={0.8}>
@@ -80,7 +85,7 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
                 <Ionicons
                   name={i < photos.length ? 'image-outline' : 'add-outline'}
                   size={22}
-                  color={i < photos.length ? Colors.primary : Colors.border}
+                  color={i < photos.length ? Colors.gold : CARD_BDR}
                 />
               )}
             </TouchableOpacity>
@@ -106,8 +111,8 @@ const CORNER_SIZE = 20;
 const CORNER_W    = 2.5;
 
 const styles = StyleSheet.create({
-  safe:               { flex: 1, backgroundColor: Colors.background },
-  viewfinder:         { height: 220, backgroundColor: Colors.darkBg, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  safe:               { flex: 1, backgroundColor: Colors.darkBg },
+  viewfinder:         { height: 220, backgroundColor: '#100810', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottomWidth: 0.5, borderBottomColor: CARD_BDR },
   cameraBtn:          { alignItems: 'center', gap: 8 },
   cameraHint:         { fontSize: 11, color: 'rgba(255,255,255,0.4)' },
   viewfinderHint:     { position: 'absolute', bottom: 10, fontSize: 10, color: 'rgba(255,255,255,0.4)' },
@@ -117,12 +122,12 @@ const styles = StyleSheet.create({
   bottomLeft:         { bottom: 12, left: 12, borderBottomWidth: CORNER_W, borderLeftWidth: CORNER_W },
   bottomRight:        { bottom: 12, right: 12, borderBottomWidth: CORNER_W, borderRightWidth: CORNER_W },
   body:               { padding: 20, gap: 12 },
-  title:              { fontSize: 17, fontWeight: '500', color: Colors.textDark },
+  title:              { fontSize: 17, fontWeight: '500', color: Colors.white },
   subtitle:           { fontSize: 12, color: Colors.textMuted, lineHeight: 18 },
   photoRow:           { flexDirection: 'row', gap: 10 },
-  photoSlot:          { flex: 1, height: 72, backgroundColor: Colors.light, borderRadius: 10, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  photoSlot:          { flex: 1, height: 72, backgroundColor: CARD_BG, borderRadius: 10, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 0.5, borderColor: CARD_BDR },
   photoThumb:         { width: '100%', height: '100%' },
   confirmBtn:         { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
-  confirmBtnDisabled: { backgroundColor: Colors.border },
+  confirmBtnDisabled: { backgroundColor: CARD_BDR },
   confirmBtnText:     { fontSize: 15, fontWeight: '500', color: Colors.white },
 });

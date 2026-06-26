@@ -5,6 +5,9 @@ import { Colors } from '../constants/Colors';
 import { WakeOffset } from '../types';
 import { WAKE_OFFSETS } from '../constants/Defaults';
 
+const CARD_BG  = '#1E0F14';
+const CARD_BDR = '#3D2030';
+
 interface Props {
   selected: WakeOffset;
   onChange: (value: WakeOffset) => void;
@@ -34,8 +37,10 @@ export default function WakeOffsetSelector({ selected, onChange }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.light,
+    backgroundColor: CARD_BG,
     borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: CARD_BDR,
     padding: 12,
   },
   label: {
@@ -49,23 +54,23 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   pill: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.darkBg,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderWidth: 0.5,
+    borderColor: CARD_BDR,
   },
   pillActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: 'rgba(232,168,95,0.18)',
+    borderColor: Colors.gold,
   },
   pillText: {
     fontSize: 11,
     color: Colors.textMuted,
   },
   pillTextActive: {
-    color: Colors.white,
+    color: Colors.gold,
     fontWeight: '500',
   },
 });

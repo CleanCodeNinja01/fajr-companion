@@ -3,6 +3,9 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '../constants/Colors';
 
+const CARD_BG  = '#1E0F14';
+const CARD_BDR = '#3D2030';
+
 interface Props {
   count: number;
 }
@@ -19,10 +22,13 @@ export default function StreakCard({ count }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.light,
+    backgroundColor: CARD_BG,
     borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: CARD_BDR,
     padding: 16,
     alignItems: 'center',
+    width: '100%',
   },
   label: {
     fontSize: 11,
@@ -32,7 +38,7 @@ const styles = StyleSheet.create({
   count: {
     fontSize: 48,
     fontWeight: '500',
-    color: Colors.primary,
+    color: Colors.gold,
     lineHeight: 56,
   },
   sub: {

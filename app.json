@@ -7,9 +7,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FDF7F5"
+      "backgroundColor": "#1A0E12"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -24,7 +24,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FDF7F5"
+        "backgroundColor": "#1A0E12"
       },
       "package": "com.fajrcompanion.app",
       "permissions": [
@@ -44,7 +44,15 @@
       }],
       "expo-image-picker",
       "expo-font",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1A0E12",
+          "image": "./assets/icon.png",
+          "imageWidth": 130,
+          "resizeMode": "contain"
+        }
+      ]
     ]
   }
 }

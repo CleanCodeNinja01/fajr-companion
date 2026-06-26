@@ -1,35 +1,60 @@
-// Header card showing today's Fajr time, location and tomorrow's time
-import React from 'react';
+// Header card showing the next upcoming Fajr time, location, and the other day
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
-import { formatTime, formatDate } from '../services/prayerTimes';
+import { formatTime, formatDate, resolveFajrDisplay } from '../services/prayerTimes';
+import StarfieldBackground from './StarfieldBackground';
 
 interface Props {
   todayFajr:    Date | null;
   tomorrowFajr: Date | null;
   cityName:     string | undefined;
+  timeZone:     string | undefined;
   loading:      boolean;
 }
 
-export default function FajrTimeCard({ todayFajr, tomorrowFajr, cityName, loading }: Props) {
+export default function FajrTimeCard({ todayFajr, tomorrowFajr, cityName, timeZone, loading }: Props) {
+  const [nowMs, setNowMs] = useState(Date.now());
+
+  // Re-evaluate when today's Fajr passes (check every minute)
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const display = useMemo(
+    () => resolveFajrDisplay(todayFajr, tomorrowFajr, nowMs),
+    [todayFajr, tomorrowFajr, nowMs],
+  );
+
+  const secondaryText =
+    display.secondary && display.secondaryLabel
+      ? `${display.secondaryLabel}: ${formatTime(display.secondary, timeZone)}`
+      : '';
+
   return (
     <View style={styles.header}>
+      <StarfieldBackground />
       <View style={styles.locationRow}>
-        <Ionicons name="location-sharp" size={11} color={Colors.headerText} />
+        <Ionicons name="location-sharp" size={11} color={Colors.gold} />
         <Text style={styles.location}>{cityName ?? 'Locating...'}</Text>
       </View>
-      <Text style={styles.label}>Today's Fajr</Text>
+      <Text style={styles.label}>{display.primaryLabel}</Text>
       <Text style={styles.time}>
-        {loading ? '--:--' : todayFajr ? formatTime(todayFajr) : '--:--'}
+        {loading ? '--:--' : display.primary ? formatTime(display.primary, timeZone) : '--:--'}
       </Text>
       <View style={styles.row}>
         <View style={styles.dateBadge}>
-          <Text style={styles.dateBadgeText}>{formatDate(new Date())}</Text>
+          <Text style={styles.dateBadgeText}>
+            {display.primary
+              ? formatDate(display.primary, timeZone)
+              : formatDate(new Date(), timeZone)}
+          </Text>
         </View>
-        <Text style={styles.tomorrow}>
-          {tomorrowFajr ? `Tomorrow: ${formatTime(tomorrowFajr)}` : ''}
-        </Text>
+        {secondaryText ? (
+          <Text style={styles.secondary}>{secondaryText}</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -37,10 +62,12 @@ export default function FajrTimeCard({ todayFajr, tomorrowFajr, cityName, loadin
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.darkBg,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 24,
+    overflow: 'hidden',
+    position: 'relative',
   },
   locationRow: {
     flexDirection: 'row',
@@ -50,7 +77,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 11,
-    color: Colors.headerText,
+    color: Colors.gold,
   },
   label: {
     fontSize: 12,
@@ -70,17 +97,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   dateBadge: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(232,168,95,0.15)',
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(232,168,95,0.3)',
   },
   dateBadgeText: {
     fontSize: 10,
-    color: Colors.white,
+    color: Colors.gold,
   },
-  tomorrow: {
+  secondary: {
     fontSize: 10,
-    color: Colors.headerText,
+    color: Colors.textMuted,
   },
 });

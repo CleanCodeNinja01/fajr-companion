@@ -11,6 +11,7 @@ import { getChecklist, saveChecklist } from '../services/storage';
 import { toISODate } from '../services/prayerTimes';
 import StreakCard from '../components/StreakCard';
 import MorningChecklist from '../components/MorningChecklist';
+import StarfieldBackground from '../components/StarfieldBackground';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'Confirmation'> };
 
@@ -35,10 +36,11 @@ export default function ConfirmationScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <StarfieldBackground />
       <ScrollView contentContainerStyle={styles.body}>
         {/* Success icon */}
         <View style={styles.iconWrap}>
-          <Ionicons name="checkmark-circle" size={32} color={Colors.accent} />
+          <Ionicons name="checkmark-circle" size={32} color={Colors.gold} />
         </View>
         <Text style={styles.title}>Alhamdulillah</Text>
         <Text style={styles.subtitle}>You woke up for Fajr today.</Text>
@@ -59,10 +61,10 @@ export default function ConfirmationScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe:       { flex: 1, backgroundColor: Colors.background },
+  safe:       { flex: 1, backgroundColor: Colors.darkBg },
   body:       { padding: 24, gap: 14, alignItems: 'center', paddingBottom: 40 },
-  iconWrap:   { width: 64, height: 64, backgroundColor: Colors.light, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  title:      { fontSize: 22, fontWeight: '500', color: Colors.textDark },
+  iconWrap:   { width: 64, height: 64, backgroundColor: 'rgba(232,168,95,0.1)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 0.5, borderColor: 'rgba(232,168,95,0.3)' },
+  title:      { fontSize: 22, fontWeight: '500', color: Colors.white },
   subtitle:   { fontSize: 13, color: Colors.textMuted, marginTop: -6 },
   doneBtn:    { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 14, alignItems: 'center', width: '100%', marginTop: 4 },
   doneBtnText: { fontSize: 15, fontWeight: '500', color: Colors.white },

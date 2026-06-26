@@ -9,9 +9,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
-import AppLogo from '../components/AppLogo';
+import SplashHero from '../components/SplashHero';
+import StarfieldBackground from '../components/StarfieldBackground';
 import CityAutocomplete from '../components/CityAutocomplete';
-import { RootStackParamList, CitySuggestion } from '../types';
+import { RootStackParamList, CitySuggestion, LocationData } from '../types';
 import {
   getCurrentLocation,
   geocodeCity,
@@ -24,7 +25,9 @@ import {
   getNotificationPermissionStatus,
   requestNotificationPermission,
 } from '../services/alarmService';
-import { saveLocation, setOnboardingDone } from '../services/storage';
+import { saveLocation, setOnboardingDone, getAlarmSettings, saveAlarmSettings } from '../services/storage';
+import { defaultCalculationMethodForCountry } from '../services/prayerTimes';
+import { inferCountryFromCityName, withTimezone } from '../services/locationService';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'Onboarding'> };
 type PermissionStatus = 'undetermined' | 'granted' | 'denied';
@@ -142,10 +145,12 @@ export default function OnboardingScreen({ navigation }: Props) {
 
       try {
         if (locationStatus === 'granted') {
-          const loc = await getCurrentLocation({ fresh: true });
+          const loc = withTimezone(await getCurrentLocation({ fresh: true }));
+          await applyCalculationMethodForLocation(loc);
           await saveLocation(loc);
         } else {
-          const loc = await getCurrentLocation();
+          const loc = withTimezone(await getCurrentLocation());
+          await applyCalculationMethodForLocation(loc);
           await saveLocation(loc);
         }
         await setOnboardingDone();
@@ -172,8 +177,19 @@ export default function OnboardingScreen({ navigation }: Props) {
     }
   }
 
+  async function applyCalculationMethodForLocation(loc: LocationData) {
+    const country = loc.country ?? inferCountryFromCityName(loc.cityName);
+    const alarmSettings = await getAlarmSettings();
+    await saveAlarmSettings({
+      ...alarmSettings,
+      calculationMethod: defaultCalculationMethodForCountry(country),
+    });
+  }
+
   async function finishWithLocation(loc: Awaited<ReturnType<typeof getCurrentLocation>>) {
-    await saveLocation(loc);
+    const enriched = withTimezone(loc);
+    await applyCalculationMethodForLocation(enriched);
+    await saveLocation(enriched);
     await requestNotificationPermission();
     await setOnboardingDone();
     setCityModal(false);
@@ -204,48 +220,54 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container} bounces={false}>
-        {/* Logo */}
-        <View style={styles.logoArea}>
-          <AppLogo size="lg" />
-          <Text style={styles.title}>Fajr Companion</Text>
-          <Text style={styles.subtitle}>Never miss Fajr.{'\n'}Simple, clean, and purposeful.</Text>
+      <StarfieldBackground />
+      <ScrollView
+        contentContainerStyle={styles.container}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.heroWrap}>
+          <SplashHero />
         </View>
 
-        {/* Permission cards — tap to request each permission */}
+        {/* ── Permission cards — tap to request ── */}
         <TouchableOpacity
           style={styles.card}
           onPress={handleLocationPress}
-          activeOpacity={0.8}
+          activeOpacity={0.75}
           disabled={locationLoading}
         >
-          <View style={styles.cardRow}>
-            <Ionicons name="location-sharp" size={14} color={Colors.accent} />
-            <Text style={styles.cardTitle}>Location</Text>
-            <PermissionBadge status={locationStatus} loading={locationLoading} />
-            <Ionicons name="chevron-forward" size={14} color={Colors.textMuted} />
+          <View style={styles.cardIconWrap}>
+            <Ionicons name="location-sharp" size={16} color={Colors.gold} />
           </View>
-          <Text style={styles.cardDesc}>To calculate your exact local Fajr time</Text>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardTitle}>Location</Text>
+            <Text style={styles.cardDesc}>Calculates your exact local Fajr time</Text>
+          </View>
+          <PermissionBadge status={locationStatus} loading={locationLoading} />
+          <Ionicons name="chevron-forward" size={13} color="#3D2030" />
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.card}
           onPress={handleNotificationPress}
-          activeOpacity={0.8}
+          activeOpacity={0.75}
           disabled={notificationLoading}
         >
-          <View style={styles.cardRow}>
-            <Ionicons name="notifications" size={14} color={Colors.accent} />
-            <Text style={styles.cardTitle}>Notifications</Text>
-            <PermissionBadge status={notificationStatus} loading={notificationLoading} />
-            <Ionicons name="chevron-forward" size={14} color={Colors.textMuted} />
+          <View style={styles.cardIconWrap}>
+            <Ionicons name="notifications" size={16} color={Colors.gold} />
           </View>
-          <Text style={styles.cardDesc}>To ring your alarm at the right moment</Text>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardTitle}>Notifications</Text>
+            <Text style={styles.cardDesc}>Rings the alarm at the right moment</Text>
+          </View>
+          <PermissionBadge status={notificationStatus} loading={notificationLoading} />
+          <Ionicons name="chevron-forward" size={13} color="#3D2030" />
         </TouchableOpacity>
 
         <View style={styles.spacer} />
 
-        {/* CTA */}
+        {/* ── CTA ── */}
         <TouchableOpacity style={styles.btn} onPress={handleGetStarted} disabled={loading} activeOpacity={0.85}>
           {loading
             ? <ActivityIndicator color={Colors.white} />
@@ -257,7 +279,7 @@ export default function OnboardingScreen({ navigation }: Props) {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* City input modal */}
+      {/* ── City modal ── */}
       <Modal visible={cityModal} transparent animationType="slide">
         <KeyboardAvoidingView
           style={styles.modalOverlay}
@@ -271,7 +293,12 @@ export default function OnboardingScreen({ navigation }: Props) {
               onSelect={handleCitySelect}
               placeholder="e.g. London, Karachi, Dubai"
             />
-            <TouchableOpacity style={styles.btn} onPress={handleCitySubmit} disabled={cityLoading || !cityInput.trim()} activeOpacity={0.85}>
+            <TouchableOpacity
+              style={styles.btn}
+              onPress={handleCitySubmit}
+              disabled={cityLoading || !cityInput.trim()}
+              activeOpacity={0.85}
+            >
               {cityLoading
                 ? <ActivityIndicator color={Colors.white} />
                 : <Text style={styles.btnText}>Confirm</Text>}
@@ -286,28 +313,51 @@ export default function OnboardingScreen({ navigation }: Props) {
   );
 }
 
+// ─── dark palette constants ───────────────────────────────────────────────────
+const CARD_BG  = '#1E0F14';
+const CARD_BDR = '#3D2030';
+
 const styles = StyleSheet.create({
-  safe:         { flex: 1, backgroundColor: Colors.background },
-  container:    { flexGrow: 1, padding: 24, paddingTop: 32 },
-  logoArea:     { alignItems: 'center', marginBottom: 32, gap: 12 },
-  title:        { fontSize: 24, fontWeight: '500', color: Colors.textDark },
-  subtitle:     { fontSize: 13, color: Colors.textMuted, lineHeight: 20, textAlign: 'center' },
-  card:         { backgroundColor: Colors.white, borderRadius: 12, borderWidth: 0.5, borderColor: Colors.border, padding: 14, marginBottom: 10 },
-  cardRow:      { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 5 },
-  cardTitle:    { fontSize: 13, fontWeight: '500', color: Colors.textDark, flex: 1 },
-  cardDesc:     { fontSize: 11, color: Colors.textMuted, lineHeight: 17 },
-  badge:            { backgroundColor: Colors.light, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
-  badgeText:        { fontSize: 10, color: Colors.primary, fontWeight: '500' },
-  badgeGranted:     { backgroundColor: '#E6F4EA', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
-  badgeGrantedText: { fontSize: 10, color: '#2E7D4F', fontWeight: '500' },
-  badgeDenied:      { backgroundColor: '#FCEAEA', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
-  badgeDeniedText:  { fontSize: 10, color: '#B54545', fontWeight: '500' },
-  spacer:       { flex: 1, minHeight: 24 },
-  btn:          { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  btnText:      { fontSize: 15, fontWeight: '500', color: Colors.white },
-  manualLink:   { alignItems: 'center', paddingVertical: 14 },
-  manualText:   { fontSize: 12, color: Colors.textMuted },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalBox:     { backgroundColor: Colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 },
-  modalTitle:   { fontSize: 16, fontWeight: '500', color: Colors.textDark, marginBottom: 14 },
+  safe:      { flex: 1, backgroundColor: Colors.darkBg },
+  container: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 40, paddingBottom: 32 },
+  heroWrap:  { marginBottom: 44 },
+
+  // Permission cards
+  card:        { flexDirection: 'row', alignItems: 'center', gap: 12,
+                 backgroundColor: CARD_BG, borderRadius: 16,
+                 borderWidth: 0.5, borderColor: CARD_BDR,
+                 padding: 14, marginBottom: 10 },
+  cardIconWrap:{ width: 38, height: 38, borderRadius: 11,
+                 backgroundColor: Colors.darkBg,
+                 alignItems: 'center', justifyContent: 'center',
+                 borderWidth: 0.5, borderColor: CARD_BDR },
+  cardBody:    { flex: 1 },
+  cardTitle:   { fontSize: 13, fontWeight: '500', color: Colors.white, marginBottom: 2 },
+  cardDesc:    { fontSize: 11, color: Colors.textMuted, lineHeight: 16 },
+
+  // Permission badges (undetermined / granted / denied)
+  badge:            { backgroundColor: '#2A1520', borderRadius: 6,
+                      paddingHorizontal: 8, paddingVertical: 3 },
+  badgeText:        { fontSize: 10, color: Colors.accent, fontWeight: '500' },
+  badgeGranted:     { backgroundColor: '#112A1A', borderRadius: 6,
+                      paddingHorizontal: 8, paddingVertical: 3 },
+  badgeGrantedText: { fontSize: 10, color: '#4CAF82', fontWeight: '500' },
+  badgeDenied:      { backgroundColor: '#2A1010', borderRadius: 6,
+                      paddingHorizontal: 8, paddingVertical: 3 },
+  badgeDeniedText:  { fontSize: 10, color: '#E07070', fontWeight: '500' },
+
+  // Bottom
+  spacer:     { flex: 1, minHeight: 32 },
+  btn:        { backgroundColor: Colors.accent, borderRadius: 14,
+                paddingVertical: 15, alignItems: 'center' },
+  btnText:    { fontSize: 15, fontWeight: '500', color: Colors.white, letterSpacing: 0.3 },
+  manualLink: { alignItems: 'center', paddingVertical: 14 },
+  manualText: { fontSize: 12, color: Colors.textMuted },
+
+  // City modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'flex-end' },
+  modalBox:     { backgroundColor: CARD_BG, borderTopLeftRadius: 24,
+                  borderTopRightRadius: 24, padding: 28, paddingBottom: 44,
+                  borderTopWidth: 0.5, borderColor: CARD_BDR },
+  modalTitle:   { fontSize: 17, fontWeight: '500', color: Colors.white, marginBottom: 16 },
 });

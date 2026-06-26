@@ -2,6 +2,8 @@
 
 export type WakeOffset = 0 | 15 | 30 | 45;
 
+export type SoundType = 'adhan' | 'gentle';
+
 export type CalculationMethodKey =
   | 'MuslimWorldLeague'
   | 'NorthAmerica'
@@ -16,7 +18,7 @@ export interface AlarmSettings {
   offset: WakeOffset;
   snoozeEnabled: boolean;
   maxSnoozes: number;
-  soundType: 'adhan' | 'gentle';
+  soundType: SoundType;
   calculationMethod: CalculationMethodKey;
 }
 
@@ -29,6 +31,8 @@ export interface LocationData {
   latitude: number;
   longitude: number;
   cityName?: string;
+  country?: string;
+  timezone?: string;
 }
 
 export interface CitySuggestion {

@@ -4,6 +4,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
 
+const CARD_BG  = '#1E0F14';
+const CARD_BDR = '#3D2030';
+
 const ITEMS = [
   { key: 'pray',    label: 'Pray Fajr' },
   { key: 'adhkar',  label: 'Morning adhkar' },
@@ -30,7 +33,7 @@ export default function MorningChecklist({ checked, onToggle }: Props) {
           <Ionicons
             name={checked[item.key] ? 'checkbox' : 'square-outline'}
             size={20}
-            color={checked[item.key] ? Colors.accent : Colors.border}
+            color={checked[item.key] ? Colors.gold : CARD_BDR}
           />
           <Text style={[styles.label, checked[item.key] && styles.labelChecked]}>
             {item.label}
@@ -43,16 +46,17 @@ export default function MorningChecklist({ checked, onToggle }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.white,
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     borderWidth: 0.5,
-    borderColor: Colors.border,
+    borderColor: CARD_BDR,
     padding: 14,
+    width: '100%',
   },
   title: {
     fontSize: 13,
     fontWeight: '500',
-    color: Colors.textDark,
+    color: Colors.white,
     marginBottom: 10,
   },
   row: {
@@ -63,14 +67,14 @@ const styles = StyleSheet.create({
   },
   rowBorder: {
     borderBottomWidth: 0.5,
-    borderBottomColor: Colors.border,
+    borderBottomColor: CARD_BDR,
   },
   label: {
     fontSize: 13,
     color: Colors.textMuted,
   },
   labelChecked: {
-    color: Colors.textDark,
+    color: Colors.white,
     fontWeight: '500',
   },
 });

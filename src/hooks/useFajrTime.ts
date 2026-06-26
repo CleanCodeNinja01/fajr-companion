@@ -1,6 +1,6 @@
 // Returns today's and tomorrow's Fajr time given location + method
 import { useState, useEffect } from 'react';
-import { getFajrTime } from '../services/prayerTimes';
+import { getFajrTime, getLocalCalendarDate } from '../services/prayerTimes';
 import { CalculationMethodKey, LocationData } from '../types';
 
 interface FajrTimeResult {
@@ -37,12 +37,16 @@ export function useFajrTime(
       }
 
       try {
-        const today    = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(today.getDate() + 1);
+        const tz = location.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const today    = getLocalCalendarDate(tz);
+        const tomorrow = getLocalCalendarDate(tz, 1);
 
-        const tf  = getFajrTime(location.latitude, location.longitude, method, today);
-        const tmf = getFajrTime(location.latitude, location.longitude, method, tomorrow);
+        const tf  = getFajrTime(
+          location.latitude, location.longitude, method, today, location.country,
+        );
+        const tmf = getFajrTime(
+          location.latitude, location.longitude, method, tomorrow, location.country,
+        );
 
         if (!cancelled) {
           setTodayFajr(tf);
@@ -57,7 +61,7 @@ export function useFajrTime(
 
     calculate();
     return () => { cancelled = true; };
-  }, [method, location?.latitude, location?.longitude, location?.cityName]);
+  }, [method, location?.latitude, location?.longitude, location?.cityName, location?.country, location?.timezone]);
 
   return { todayFajr, tomorrowFajr, loading, error };
 }
