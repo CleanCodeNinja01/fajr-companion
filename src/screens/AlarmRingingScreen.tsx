@@ -20,7 +20,7 @@ export default function AlarmRingingScreen({ navigation }: Props) {
   useEffect(() => {
     loadSettings();
     startAlarmSound();
-    return () => { stopAlarmSound(); };
+    return () => { void stopAlarmSound(); };
   }, []);
 
   async function loadSettings() {

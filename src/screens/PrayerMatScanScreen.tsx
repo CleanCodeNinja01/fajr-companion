@@ -39,6 +39,8 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
     }
   }
 
+  const canConfirm = photos.length > 0 || __DEV__;
+
   async function handleConfirm() {
     setLoading(true);
     try {
@@ -72,7 +74,7 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.title}>Verify you're awake</Text>
         <Text style={styles.subtitle}>
-          Take a quick photo of your prayer mat. No AI — just your proof.
+          Take a quick photo of your prayer mat. No AI - just your proof.
         </Text>
 
         {/* Photo thumbnails */}
@@ -93,15 +95,19 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
         </View>
 
         <TouchableOpacity
-          style={[styles.confirmBtn, photos.length === 0 && styles.confirmBtnDisabled]}
+          style={[styles.confirmBtn, !canConfirm && styles.confirmBtnDisabled]}
           onPress={handleConfirm}
-          disabled={photos.length === 0 || loading}
+          disabled={!canConfirm || loading}
           activeOpacity={0.85}
         >
           <Text style={styles.confirmBtnText}>
             {loading ? 'Saving...' : "Confirm I'm up for Fajr"}
           </Text>
         </TouchableOpacity>
+
+        {__DEV__ && photos.length === 0 && (
+          <Text style={styles.devHint}>Dev: photo optional — tap confirm to test the flow</Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -130,4 +136,5 @@ const styles = StyleSheet.create({
   confirmBtn:         { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   confirmBtnDisabled: { backgroundColor: CARD_BDR },
   confirmBtnText:     { fontSize: 15, fontWeight: '500', color: Colors.white },
+  devHint:            { fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginTop: 4 },
 });

@@ -24,7 +24,7 @@ export default function AlarmSettingsScreen({ navigation }: Props) {
   const { settings, update } = useAlarmSettings();
   const [previewing, setPreviewing] = useState(false);
 
-  useEffect(() => () => { stopAlarmSound(); }, []);
+  useEffect(() => () => { void stopAlarmSound(); }, []);
 
   async function handlePreview() {
     if (previewing) {
@@ -172,6 +172,23 @@ export default function AlarmSettingsScreen({ navigation }: Props) {
           </Text>
         </TouchableOpacity>
 
+        {__DEV__ && (
+          <TouchableOpacity
+            style={styles.devBtn}
+            onPress={async () => {
+              if (previewing) {
+                await stopAlarmSound();
+                setPreviewing(false);
+              }
+              navigation.navigate('AlarmRinging');
+            }}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="bug-outline" size={16} color={Colors.textMuted} />
+            <Text style={styles.devBtnText}>Open alarm screen (dev)</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={styles.saveBtn} onPress={() => navigation.goBack()} activeOpacity={0.85}>
           <Text style={styles.saveBtnText}>Save</Text>
         </TouchableOpacity>
@@ -206,6 +223,9 @@ const styles = StyleSheet.create({
   previewBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
                    paddingVertical: 12, marginTop: 4 },
   previewBtnText:{ fontSize: 13, color: Colors.gold, fontWeight: '500' },
+  devBtn:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                   paddingVertical: 10, marginTop: 2 },
+  devBtnText:    { fontSize: 12, color: Colors.textMuted },
   saveBtn:       { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
   saveBtnText:   { fontSize: 15, fontWeight: '500', color: Colors.white },
   resetBtn:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 },

@@ -1,19 +1,21 @@
 // Play / stop alarm audio (Fajr adhan or gentle tone)
-import { Audio, AVPlaybackSource } from 'expo-av';
-import { SoundType } from '../types';
-
-// Makkah Fajr adhan (Masjid al-Haram) — bundled locally, works offline
-const FAJR_ADHAN_SOURCES: AVPlaybackSource[] = [
-  require('../../assets/adhan.mp3'),
-];
-
-const GENTLE_SOURCES: AVPlaybackSource[] = [
-  require('../../assets/gentle-alarm.mp3'),
-  { uri: 'https://assets.mixkit.co/active_storage/sfx/1003/1003-preview.mp3' },
-  { uri: 'https://assets.mixkit.co/active_storage/sfx/935/935-preview.mp3' },
-];
+import { Audio } from 'expo-av';
+import type { AVPlaybackSource } from 'expo-av';
+import type { SoundType } from '../types';
 
 let activeSound: Audio.Sound | null = null;
+
+function fajrAdhanSources(): AVPlaybackSource[] {
+  return [require('../../assets/adhan.mp3')];
+}
+
+function gentleSources(): AVPlaybackSource[] {
+  return [
+    require('../../assets/gentle-alarm.mp3'),
+    { uri: 'https://assets.mixkit.co/active_storage/sfx/1003/1003-preview.mp3' },
+    { uri: 'https://assets.mixkit.co/active_storage/sfx/935/935-preview.mp3' },
+  ];
+}
 
 async function clearActiveSound(): Promise<void> {
   if (!activeSound) return;
@@ -27,7 +29,7 @@ async function clearActiveSound(): Promise<void> {
   }
 }
 
-async function configureAudioMode() {
+async function configureAudioMode(): Promise<void> {
   await Audio.setAudioModeAsync({
     allowsRecordingIOS: false,
     playsInSilentModeIOS: true,
@@ -62,7 +64,7 @@ async function trySources(
   return null;
 }
 
-export async function playAlarmSound(
+async function playAlarmSound(
   soundType: SoundType,
   loop = true,
   onFinish?: () => void,
@@ -70,7 +72,7 @@ export async function playAlarmSound(
   await clearActiveSound();
   await configureAudioMode();
 
-  const sources = soundType === 'adhan' ? FAJR_ADHAN_SOURCES : GENTLE_SOURCES;
+  const sources = soundType === 'adhan' ? fajrAdhanSources() : gentleSources();
   const sound = await trySources(sources, loop, onFinish);
   if (!sound) return false;
 
@@ -78,13 +80,15 @@ export async function playAlarmSound(
   return true;
 }
 
-export async function previewAlarmSound(
+async function previewAlarmSound(
   soundType: SoundType,
   onFinish?: () => void,
 ): Promise<boolean> {
   return playAlarmSound(soundType, false, onFinish);
 }
 
-export async function stopAlarmSound(): Promise<void> {
-  await clearActiveSound();
+function stopAlarmSound(): Promise<void> {
+  return clearActiveSound();
 }
+
+export { playAlarmSound, previewAlarmSound, stopAlarmSound };
