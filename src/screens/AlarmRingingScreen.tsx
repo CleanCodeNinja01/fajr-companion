@@ -37,7 +37,9 @@ export default function AlarmRingingScreen({ navigation }: Props) {
     if (!ok) {
       Alert.alert(
         'Could not play alarm sound',
-        'Check your volume and internet connection, then try again.',
+        s.soundType === 'adhan'
+          ? 'Check your volume and try again.'
+          : 'Check your volume and internet connection, then try again.',
       );
     }
   }

@@ -2,13 +2,9 @@
 import { Audio, AVPlaybackSource } from 'expo-av';
 import { SoundType } from '../types';
 
-// Makkah Fajr adhan (Masjid al-Haram) — bundled + CDN fallbacks
+// Makkah Fajr adhan (Masjid al-Haram) — bundled locally, works offline
 const FAJR_ADHAN_SOURCES: AVPlaybackSource[] = [
   require('../../assets/adhan.mp3'),
-  {
-    uri: 'https://archive.org/download/MakkahFajrAdhan6913SheikhAliMullah/Makkah%20Fajr%20Adhan%206-9-13%20Sheikh%20Ali%20Mullah.mp3',
-  },
-  { uri: 'https://cdn.aladhan.com/audio/adhans/fajr/f2-mansour-al-zahrani.mp3' },
 ];
 
 const GENTLE_SOURCES: AVPlaybackSource[] = [

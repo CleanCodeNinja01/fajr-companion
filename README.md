@@ -56,15 +56,9 @@ npx expo start
 
 ## Adhan Audio
 
-The app streams the Makkah adhan at runtime from `cdn.islamic.network` — no file download needed. It requires an internet connection when the alarm rings. A fallback URL (Islamic Finder) is tried automatically if the first source fails.
+The Makkah Fajr adhan is bundled in `assets/adhan.mp3` (~4 min, Sheikh Ali Mullah, Masjid al-Haram). It plays **offline** — no internet needed when the alarm rings.
 
-To use a local bundled file instead (works offline):
-
-1. Drop your `adhan.mp3` into the `assets/` folder
-2. In `src/screens/AlarmRingingScreen.tsx`, replace the `ADHAN_SOURCES` array with:
-   ```ts
-   const ADHAN_SOURCES = [require('../../assets/adhan.mp3')];
-   ```
+To replace it, drop a new `adhan.mp3` into `assets/` and restart the dev server.
 
 ---
 
@@ -73,7 +67,7 @@ To use a local bundled file instead (works offline):
 ```
 fajr-companion/
 ├── App.tsx                         # Entry point — bootstraps nav, handles notification taps
-├── assets/adhan.mp3                # Replace with a real adhan for production
+├── assets/adhan.mp3                # Makkah Fajr adhan (bundled, offline)
 └── src/
     ├── types/index.ts              # All shared TypeScript types
     ├── constants/
