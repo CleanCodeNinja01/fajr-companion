@@ -10,8 +10,10 @@ import { Colors } from '../constants/Colors';
 import { RootStackParamList, WakeOffset, SoundType } from '../types';
 import { useAlarmSettings } from '../hooks/useAlarmSettings';
 import { WAKE_OFFSETS } from '../constants/Defaults';
-import { resetAllData } from '../services/storage';
+import { resetAllData, getLocation } from '../services/storage';
 import { cancelAllAlarms } from '../services/alarmService';
+import { rescheduleFajrAlarmIfEnabled } from '../services/alarmScheduling';
+import { withTimezone } from '../services/locationService';
 import { previewAlarmSound, stopAlarmSound } from '../services/alarmSoundService';
 import StarfieldBackground from '../components/StarfieldBackground';
 
@@ -47,6 +49,15 @@ export default function AlarmSettingsScreen({ navigation }: Props) {
       const ok = await previewAlarmSound(soundType);
       if (!ok) setPreviewing(false);
     }
+  }
+
+  async function handleOffsetChange(offset: WakeOffset) {
+    await update({ offset });
+    const loc = await getLocation();
+    await rescheduleFajrAlarmIfEnabled(
+      { ...settings, offset },
+      loc ? withTimezone(loc) : null,
+    );
   }
 
   function handleReset() {
@@ -93,7 +104,7 @@ export default function AlarmSettingsScreen({ navigation }: Props) {
             <TouchableOpacity
               key={o.value}
               style={[styles.radioRow, idx < WAKE_OFFSETS.length - 1 && styles.rowBorder]}
-              onPress={() => update({ offset: o.value as WakeOffset })}
+              onPress={() => handleOffsetChange(o.value as WakeOffset)}
               activeOpacity={0.7}
             >
               <Text style={styles.radioLabel}>{o.label}</Text>

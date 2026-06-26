@@ -129,7 +129,10 @@ export function resolveFajrDisplay(
     };
   }
 
-  if (todayFajr.getTime() > nowMs) {
+  const todayStillUpcoming = todayFajr.getTime() > nowMs;
+
+  // Before today's Fajr — day is in progress but Fajr hasn't happened yet
+  if (todayStillUpcoming) {
     return {
       primary: todayFajr,
       primaryLabel: "Today's Fajr",
@@ -138,25 +141,37 @@ export function resolveFajrDisplay(
     };
   }
 
+  // Today's Fajr is done — next wake-up is tomorrow
+  if (tomorrowFajr) {
+    return {
+      primary: tomorrowFajr,
+      primaryLabel: "Tomorrow's Fajr",
+      secondary: null,
+      secondaryLabel: null,
+    };
+  }
+
+  // Tomorrow not calculated yet — fall back to today's time with a matching label
   return {
-    primary: tomorrowFajr ?? todayFajr,
-    primaryLabel: "Tomorrow's Fajr",
-    secondary: todayFajr,
-    secondaryLabel: 'Today',
+    primary: todayFajr,
+    primaryLabel: "Today's Fajr",
+    secondary: null,
+    secondaryLabel: null,
   };
 }
 
 /** Format a prayer Date in the city's IANA timezone (not the device timezone). */
 export function formatTime(date: Date, timeZone?: string): string {
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
     minute: '2-digit',
+    hour12: true,
     ...(timeZone ? { timeZone } : {}),
   });
 }
 
 export function formatDate(date: Date, timeZone?: string): string {
-  return date.toLocaleDateString([], {
+  return date.toLocaleDateString('en-US', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',

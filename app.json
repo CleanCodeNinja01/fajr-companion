@@ -5,15 +5,17 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "backgroundColor": "#1A0E12",
+    "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/icon.png",
-      "resizeMode": "contain",
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#1A0E12"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
+      "backgroundColor": "#1A0E12",
       "bundleIdentifier": "com.fajrcompanion.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Used to calculate your local Fajr prayer time.",
@@ -22,6 +24,7 @@
       }
     },
     "android": {
+      "backgroundColor": "#1A0E12",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1A0E12"
@@ -37,8 +40,17 @@
         "POST_NOTIFICATIONS"
       ]
     },
+    "extra": {
+      "posthogApiKey": "",
+      "posthogHost": "https://us.i.posthog.com"
+    },
     "plugins": [
-      ["expo-notifications", { "color": "#7C3D52" }],
+      "expo-dev-client",
+      ["expo-notifications", {
+        "color": "#7C3D52",
+        "defaultChannel": "fajr-alarm",
+        "enableBackgroundRemoteNotifications": false
+      }],
       ["expo-location", {
         "locationWhenInUsePermission": "Allow Fajr Companion to use your location to calculate prayer times."
       }],
@@ -48,9 +60,8 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#1A0E12",
-          "image": "./assets/icon.png",
-          "imageWidth": 130,
-          "resizeMode": "contain"
+          "image": "./assets/splash.png",
+          "resizeMode": "cover"
         }
       ]
     ]

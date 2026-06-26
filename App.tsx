@@ -8,7 +8,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation/AppNavigator';
 import BrandedSplashScreen from './src/components/BrandedSplashScreen';
+import { Colors } from './src/constants/Colors';
 import { getOnboardingDone } from './src/services/storage';
+import { initAnalytics, track } from './src/services/analytics';
+import { AnalyticsEvents } from './src/constants/AnalyticsEvents';
 import { RootStackParamList } from './src/types';
 
 SplashScreen.preventAutoHideAsync();
@@ -20,6 +23,8 @@ export default function App() {
   useEffect(() => {
     async function bootstrap() {
       try {
+        await initAnalytics();
+        void track(AnalyticsEvents.APP_OPENED);
         const done = await getOnboardingDone();
         setInitialRoute(done ? 'Home' : 'Onboarding');
       } finally {
@@ -31,6 +36,7 @@ export default function App() {
     const sub = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data as { type?: string };
       if (data?.type === 'fajr_alarm') {
+        void track(AnalyticsEvents.NOTIFICATION_OPENED, { source: 'fajr_alarm' });
         setInitialRoute('AlarmRinging');
       }
     });
@@ -40,17 +46,22 @@ export default function App() {
 
   useEffect(() => {
     if (appReady) {
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync();
     }
   }, [appReady]);
 
   if (!appReady || !initialRoute) {
-    return <BrandedSplashScreen />;
+    return (
+      <>
+        <StatusBar style="light" />
+        <BrandedSplashScreen />
+      </>
+    );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.darkBg }}>
+      <SafeAreaProvider style={{ flex: 1, backgroundColor: Colors.darkBg }}>
         <StatusBar style="light" />
         <AppNavigator initialRoute={initialRoute} />
       </SafeAreaProvider>

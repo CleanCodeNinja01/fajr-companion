@@ -20,13 +20,16 @@ import { useFajrTime } from '../hooks/useFajrTime';
 import { geocodeCity, getCurrentLocation, openLocationSettings, suggestionToLocation, inferCountryFromCityName, withTimezone } from '../services/locationService';
 import { defaultCalculationMethodForCountry, getFajrTime, getLocalCalendarDate, resolveFajrDisplay } from '../services/prayerTimes';
 import {
-  scheduleAlarm, cancelAllAlarms,
+  cancelAllAlarms,
   requestNotificationPermission,
 } from '../services/alarmService';
+import { rescheduleFajrAlarm } from '../services/alarmScheduling';
 import {
   getLocation, saveLocation,
-  saveNotificationId, clearNotificationId,
+  clearNotificationId,
 } from '../services/storage';
+import { track } from '../services/analytics';
+import { AnalyticsEvents } from '../constants/AnalyticsEvents';
 
 const CARD_BG  = '#1E0F14';
 const CARD_BDR = '#3D2030';
@@ -85,9 +88,7 @@ export default function HomeScreen({ navigation }: Props) {
   }
 
   async function rescheduleAlarm(fajrTime: Date, offset: WakeOffset) {
-    await cancelAllAlarms();
-    const id = await scheduleAlarm(fajrTime, offset);
-    await saveNotificationId(id);
+    await rescheduleFajrAlarm(fajrTime, offset);
   }
 
   async function toggleAlarm(enabled: boolean) {
@@ -100,14 +101,17 @@ export default function HomeScreen({ navigation }: Props) {
         return;
       }
       await rescheduleAlarm(nextFajr, settings.offset);
+      void track(AnalyticsEvents.ALARM_TOGGLED, { enabled: true, offset: settings.offset });
     } else {
       await cancelAllAlarms();
       await clearNotificationId();
+      void track(AnalyticsEvents.ALARM_TOGGLED, { enabled: false, offset: settings.offset });
     }
   }
 
   async function changeOffset(offset: WakeOffset) {
     await update({ offset });
+    void track(AnalyticsEvents.ALARM_OFFSET_CHANGED, { offset });
     if (settings.enabled && nextFajr) {
       await rescheduleAlarm(nextFajr, offset);
     }
@@ -120,6 +124,10 @@ export default function HomeScreen({ navigation }: Props) {
     setLocation(enriched);
     setCityModal(false);
     setCityInput('');
+
+    void track(AnalyticsEvents.CITY_CHANGED, {
+      country: enriched.country ?? inferCountryFromCityName(enriched.cityName) ?? null,
+    });
 
     if (settings.enabled) {
       const tz = enriched.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -200,17 +208,17 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <FajrTimeCard
-        todayFajr={todayFajr}
-        tomorrowFajr={tomorrowFajr}
-        cityName={location?.cityName}
-        timeZone={location?.timezone}
-        loading={fajrLoading || settingsLoading}
-      />
+      <StarfieldBackground />
+      <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        <FajrTimeCard
+          todayFajr={todayFajr}
+          tomorrowFajr={tomorrowFajr}
+          cityName={location?.cityName}
+          timeZone={location?.timezone}
+          loading={fajrLoading || settingsLoading}
+        />
 
-      <View style={styles.scrollContainer}>
-        <StarfieldBackground />
-        <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+        <View style={styles.body}>
           {/* City */}
           <TouchableOpacity style={styles.card} onPress={openCityPicker} activeOpacity={0.8}>
             <View style={styles.row}>
@@ -253,8 +261,8 @@ export default function HomeScreen({ navigation }: Props) {
             <Ionicons name="settings-outline" size={16} color={Colors.white} />
             <Text style={styles.btnText}>Alarm Settings</Text>
           </TouchableOpacity>
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
 
       {/* City picker modal */}
       <Modal visible={cityModal} transparent animationType="slide">
@@ -307,8 +315,8 @@ export default function HomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe:           { flex: 1, backgroundColor: Colors.darkBg },
-  scrollContainer:{ flex: 1, position: 'relative', overflow: 'hidden' },
-  body:           { padding: 16, gap: 10, paddingBottom: 32 },
+  scrollBody:     { flexGrow: 1, paddingBottom: 32 },
+  body:           { padding: 16, gap: 10 },
   card:           { backgroundColor: CARD_BG, borderRadius: 12, borderWidth: 0.5, borderColor: CARD_BDR, padding: 14 },
   row:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardLabel:      { fontSize: 10, color: Colors.textMuted, marginBottom: 2 },

@@ -1,22 +1,28 @@
-// Full-screen branded splash — matches onboarding look (dark bg + starfield + hero)
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+// Full-screen branded splash — matches native splash.png (dark starfield + logo)
+import React, { useEffect } from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
 import { Colors } from '../constants/Colors';
-import StarfieldBackground from './StarfieldBackground';
-import SplashHero from './SplashHero';
 
 export default function BrandedSplashScreen() {
+  useEffect(() => {
+    // Hand off from native splash to JS — same artwork, no flash
+    void SplashScreen.hideAsync();
+  }, []);
+
   return (
     <View style={styles.root}>
-      <StarfieldBackground />
-      <View style={styles.content}>
-        <SplashHero />
-      </View>
+      <Image
+        source={require('../../assets/splash.png')}
+        style={styles.image}
+        resizeMode="cover"
+        accessibilityLabel="Fajr Companion"
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root:    { flex: 1, backgroundColor: Colors.darkBg },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 48 },
+  root:  { flex: 1, backgroundColor: Colors.darkBg },
+  image: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
 });

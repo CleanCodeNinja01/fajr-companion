@@ -64,7 +64,7 @@ async function trySources(
   return null;
 }
 
-async function playAlarmSound(
+export async function playAlarmSound(
   soundType: SoundType,
   loop = true,
   onFinish?: () => void,
@@ -80,15 +80,13 @@ async function playAlarmSound(
   return true;
 }
 
-async function previewAlarmSound(
+export async function previewAlarmSound(
   soundType: SoundType,
   onFinish?: () => void,
 ): Promise<boolean> {
   return playAlarmSound(soundType, false, onFinish);
 }
 
-function stopAlarmSound(): Promise<void> {
-  return clearActiveSound();
+export async function stopAlarmSound(): Promise<void> {
+  await clearActiveSound();
 }
-
-export { playAlarmSound, previewAlarmSound, stopAlarmSound };

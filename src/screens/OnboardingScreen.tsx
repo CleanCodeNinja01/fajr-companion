@@ -28,6 +28,8 @@ import {
 import { saveLocation, setOnboardingDone, getAlarmSettings, saveAlarmSettings } from '../services/storage';
 import { defaultCalculationMethodForCountry } from '../services/prayerTimes';
 import { inferCountryFromCityName, withTimezone } from '../services/locationService';
+import { track } from '../services/analytics';
+import { AnalyticsEvents } from '../constants/AnalyticsEvents';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'Onboarding'> };
 type PermissionStatus = 'undetermined' | 'granted' | 'denied';
@@ -154,6 +156,11 @@ export default function OnboardingScreen({ navigation }: Props) {
           await saveLocation(loc);
         }
         await setOnboardingDone();
+        void track(AnalyticsEvents.ONBOARDING_COMPLETED, {
+          method: 'location',
+          location_granted: locationStatus === 'granted',
+          notifications_granted: notificationStatus === 'granted',
+        });
         navigation.replace('Home');
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : '';
@@ -192,6 +199,10 @@ export default function OnboardingScreen({ navigation }: Props) {
     await saveLocation(enriched);
     await requestNotificationPermission();
     await setOnboardingDone();
+    void track(AnalyticsEvents.ONBOARDING_COMPLETED, {
+      method: 'manual_city',
+      country: enriched.country ?? inferCountryFromCityName(enriched.cityName) ?? null,
+    });
     setCityModal(false);
     navigation.replace('Home');
   }

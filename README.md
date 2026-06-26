@@ -34,23 +34,30 @@ A minimal, clean mobile app that helps Muslims wake up for Fajr prayer. Built wi
 ## Prerequisites
 
 - Node.js 18 or later
-- **Expo Go** app on your phone ([iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent))
+- **Xcode** (iOS Simulator) or **Android Studio** (Android emulator)
+- A **development build** is required for alarm notifications — Expo Go does not support them on Android (SDK 53+)
 
 ---
 
 ## Setup & Run
 
+Alarm notifications need a native development build (not Expo Go).
+
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Start the dev server
-npx expo start
+# 2. Build and install the dev client (first time only)
+npm run ios      # iOS Simulator
+npm run android  # Android emulator (requires Android SDK)
 
-# 3. Scan the QR code with:
-#    iOS  → Camera app
-#    Android → Expo Go app
+# 3. Start Metro for the dev client
+npm start
 ```
+
+After the first build, run `npm start` and open the **Fajr Companion** app on your device/simulator (not Expo Go).
+
+To build for a physical device via EAS: `npx eas build --profile development --platform ios|android`
 
 ---
 

@@ -1,10 +1,9 @@
 // Header card showing the next upcoming Fajr time, location, and the other day
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
 import { formatTime, formatDate, resolveFajrDisplay } from '../services/prayerTimes';
-import StarfieldBackground from './StarfieldBackground';
 
 interface Props {
   todayFajr:    Date | null;
@@ -35,7 +34,6 @@ export default function FajrTimeCard({ todayFajr, tomorrowFajr, cityName, timeZo
 
   return (
     <View style={styles.header}>
-      <StarfieldBackground />
       <View style={styles.locationRow}>
         <Ionicons name="location-sharp" size={11} color={Colors.gold} />
         <Text style={styles.location}>{cityName ?? 'Locating...'}</Text>
@@ -62,12 +60,9 @@ export default function FajrTimeCard({ todayFajr, tomorrowFajr, cityName, timeZo
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: Colors.darkBg,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 24,
-    overflow: 'hidden',
-    position: 'relative',
   },
   locationRow: {
     flexDirection: 'row',
@@ -89,6 +84,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: Colors.white,
     letterSpacing: -0.5,
+    includeFontPadding: false,
+    ...(Platform.OS === 'android' ? { fontVariant: ['tabular-nums'] } : {}),
   },
   row: {
     flexDirection: 'row',

@@ -40,6 +40,7 @@ describe('scheduleAlarm', () => {
         trigger: {
           type: 'date',
           date: new Date('2026-06-27T04:15:00'),
+          channelId: 'fajr-alarm',
         },
       }),
     );
@@ -69,6 +70,7 @@ describe('scheduleSnooze', () => {
         trigger: {
           type: 'timeInterval',
           seconds: 300,
+          channelId: 'fajr-alarm',
         },
       }),
     );

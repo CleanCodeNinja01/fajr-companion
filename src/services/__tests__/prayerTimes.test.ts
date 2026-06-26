@@ -55,8 +55,8 @@ describe('resolveFajrDisplay', () => {
 
     expect(result.primary).toEqual(tomorrowFajr);
     expect(result.primaryLabel).toBe("Tomorrow's Fajr");
-    expect(result.secondary).toEqual(todayFajr);
-    expect(result.secondaryLabel).toBe('Today');
+    expect(result.secondary).toBeNull();
+    expect(result.secondaryLabel).toBeNull();
   });
 
   it('returns null primary when today Fajr is unavailable', () => {
@@ -72,7 +72,8 @@ describe('resolveFajrDisplay', () => {
     const result = resolveFajrDisplay(todayFajr, null, now);
 
     expect(result.primary).toEqual(todayFajr);
-    expect(result.primaryLabel).toBe("Tomorrow's Fajr");
+    expect(result.primaryLabel).toBe("Today's Fajr");
+    expect(result.secondary).toBeNull();
   });
 });
 

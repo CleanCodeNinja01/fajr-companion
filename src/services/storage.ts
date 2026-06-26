@@ -87,5 +87,12 @@ export async function resetSnoozeCount(): Promise<void> {
 
 // --- Full reset (dev / "Start Over") ---
 export async function resetAllData(): Promise<void> {
-  await AsyncStorage.multiRemove(Object.values(KEYS));
+  const allKeys = await AsyncStorage.getAllKeys();
+  const checklistPrefix = `${KEYS.CHECKLIST}_`;
+  const toRemove = allKeys.filter(
+    k => (Object.values(KEYS) as string[]).includes(k) || k.startsWith(checklistPrefix),
+  );
+  if (toRemove.length > 0) {
+    await AsyncStorage.multiRemove(toRemove);
+  }
 }

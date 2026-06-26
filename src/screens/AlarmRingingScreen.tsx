@@ -1,6 +1,6 @@
 // Full-screen alarm: plays adhan or gentle tone, offers "I'm Awake" or Snooze
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -9,6 +9,8 @@ import { RootStackParamList } from '../types';
 import { getAlarmSettings, getSnoozeCount, setSnoozeCount, resetSnoozeCount } from '../services/storage';
 import { scheduleSnooze } from '../services/alarmService';
 import { playAlarmSound, stopAlarmSound } from '../services/alarmSoundService';
+import { track } from '../services/analytics';
+import { AnalyticsEvents } from '../constants/AnalyticsEvents';
 import StarfieldBackground from '../components/StarfieldBackground';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'AlarmRinging'> };
@@ -47,6 +49,7 @@ export default function AlarmRingingScreen({ navigation }: Props) {
   async function handleAwake() {
     await stopAlarmSound();
     await resetSnoozeCount();
+    void track(AnalyticsEvents.ALARM_AWAKE);
     navigation.replace('PrayerMatScan');
   }
 
@@ -60,12 +63,33 @@ export default function AlarmRingingScreen({ navigation }: Props) {
     await setSnoozeCount(used + 1);
     await scheduleSnooze(5);
     setSnoozeLeft(prev => prev - 1);
+    void track(AnalyticsEvents.ALARM_SNOOZED, { snoozes_remaining: snoozeLeft - 1 });
     navigation.replace('Home');
   }
 
+  async function handleBack() {
+    await stopAlarmSound();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.replace('Home');
+    }
+  }
+
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <StarfieldBackground />
+
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={handleBack}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={22} color={Colors.light} />
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.content}>
         <View style={styles.iconWrap}>
           <Ionicons name="alarm-outline" size={36} color={Colors.gold} />
@@ -99,9 +123,18 @@ export default function AlarmRingingScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe:          { flex: 1, backgroundColor: Colors.darkBg },
+  header:        { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
   content:       { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   iconWrap:      { width: 72, height: 72, backgroundColor: 'rgba(232,168,95,0.1)', borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 20, borderWidth: 0.5, borderColor: 'rgba(232,168,95,0.3)' },
-  arabic:        { fontSize: 54, fontWeight: '200', color: Colors.light, letterSpacing: 10, includeFontPadding: false },
+  arabic:        {
+    fontSize: 54,
+    fontWeight: '200',
+    color: Colors.light,
+    letterSpacing: Platform.OS === 'android' ? 6 : 10,
+    includeFontPadding: false,
+    textAlign: 'center',
+    writingDirection: 'rtl',
+  },
   divider:       { width: 28, height: 1, backgroundColor: Colors.gold, marginVertical: 12 },
   title:         { fontSize: 18, fontWeight: '400', color: Colors.white, marginBottom: 10, textAlign: 'center', letterSpacing: 0.3 },
   quote:         { fontSize: 13, color: Colors.headerText, fontStyle: 'italic', textAlign: 'center', lineHeight: 22 },

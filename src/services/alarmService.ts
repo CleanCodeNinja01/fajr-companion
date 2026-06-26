@@ -1,5 +1,22 @@
 // Schedule and cancel Expo local notifications for the Fajr alarm
+import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+
+const FAJR_CHANNEL_ID = 'fajr-alarm';
+
+let channelReady = false;
+
+async function ensureAndroidChannel(): Promise<void> {
+  if (Platform.OS !== 'android' || channelReady) return;
+  await Notifications.setNotificationChannelAsync(FAJR_CHANNEL_ID, {
+    name: 'Fajr Alarm',
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    sound: 'default',
+    bypassDnd: true,
+  });
+  channelReady = true;
+}
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -30,6 +47,7 @@ export async function scheduleAlarm(
   fajrTime: Date,
   offsetMinutes: number,
 ): Promise<string> {
+  await ensureAndroidChannel();
   const triggerDate = new Date(fajrTime.getTime() - offsetMinutes * 60 * 1000);
 
   // If trigger time is in the past, schedule for tomorrow
@@ -47,6 +65,7 @@ export async function scheduleAlarm(
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: triggerDate,
+      channelId: FAJR_CHANNEL_ID,
     },
   });
 
@@ -65,6 +84,7 @@ export async function cancelAllAlarms(): Promise<void> {
  * Schedule a snooze notification N minutes from now.
  */
 export async function scheduleSnooze(minutes: number = 5): Promise<string> {
+  await ensureAndroidChannel();
   const id = await Notifications.scheduleNotificationAsync({
     content: {
       title: '🕌 Fajr — Snooze Over',
@@ -75,6 +95,7 @@ export async function scheduleSnooze(minutes: number = 5): Promise<string> {
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds: minutes * 60,
+      channelId: FAJR_CHANNEL_ID,
     },
   });
   return id;
