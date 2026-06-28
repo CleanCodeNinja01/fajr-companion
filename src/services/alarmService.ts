@@ -1,13 +1,27 @@
 // Schedule and cancel Expo local notifications for the Fajr alarm
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import {
+  getNotificationsModule,
+  initNotificationsModule,
+  isNotificationsSupported,
+} from './notificationsModule';
 
 const FAJR_CHANNEL_ID = 'fajr-alarm';
 
 let channelReady = false;
+let handlerReady = false;
+
+function notifications() {
+  if (!handlerReady) {
+    initNotificationsModule();
+    handlerReady = true;
+  }
+  return getNotificationsModule();
+}
 
 async function ensureAndroidChannel(): Promise<void> {
-  if (Platform.OS !== 'android' || channelReady) return;
+  const Notifications = notifications();
+  if (!Notifications || Platform.OS !== 'android' || channelReady) return;
   await Notifications.setNotificationChannelAsync(FAJR_CHANNEL_ID, {
     name: 'Fajr Alarm',
     importance: Notifications.AndroidImportance.MAX,
@@ -18,16 +32,9 @@ async function ensureAndroidChannel(): Promise<void> {
   channelReady = true;
 }
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
-
 export async function getNotificationPermissionStatus(): Promise<'granted' | 'denied' | 'undetermined'> {
+  const Notifications = notifications();
+  if (!Notifications) return 'undetermined';
   const { status } = await Notifications.getPermissionsAsync();
   if (status === 'granted') return 'granted';
   if (status === 'denied') return 'denied';
@@ -35,6 +42,8 @@ export async function getNotificationPermissionStatus(): Promise<'granted' | 'de
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
+  const Notifications = notifications();
+  if (!Notifications) return false;
   const { status } = await Notifications.requestPermissionsAsync();
   return status === 'granted';
 }
@@ -47,10 +56,14 @@ export async function scheduleAlarm(
   fajrTime: Date,
   offsetMinutes: number,
 ): Promise<string> {
+  const Notifications = notifications();
+  if (!Notifications) {
+    throw new Error('Notifications require a development build (not Expo Go on Android).');
+  }
+
   await ensureAndroidChannel();
   const triggerDate = new Date(fajrTime.getTime() - offsetMinutes * 60 * 1000);
 
-  // If trigger time is in the past, schedule for tomorrow
   if (triggerDate <= new Date()) {
     triggerDate.setDate(triggerDate.getDate() + 1);
   }
@@ -73,17 +86,24 @@ export async function scheduleAlarm(
 }
 
 export async function cancelAlarm(id: string): Promise<void> {
+  const Notifications = notifications();
+  if (!Notifications) return;
   await Notifications.cancelScheduledNotificationAsync(id);
 }
 
 export async function cancelAllAlarms(): Promise<void> {
+  const Notifications = notifications();
+  if (!Notifications) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
-/**
- * Schedule a snooze notification N minutes from now.
- */
+/** Schedule a snooze notification N minutes from now. */
 export async function scheduleSnooze(minutes: number = 5): Promise<string> {
+  const Notifications = notifications();
+  if (!Notifications) {
+    throw new Error('Notifications require a development build (not Expo Go on Android).');
+  }
+
   await ensureAndroidChannel();
   const id = await Notifications.scheduleNotificationAsync({
     content: {
@@ -100,3 +120,5 @@ export async function scheduleSnooze(minutes: number = 5): Promise<string> {
   });
   return id;
 }
+
+export { isNotificationsSupported };

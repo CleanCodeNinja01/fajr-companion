@@ -1,15 +1,9 @@
 // Full-screen branded splash — matches native splash.png (dark starfield + logo)
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
 import { Colors } from '../constants/Colors';
 
 export default function BrandedSplashScreen() {
-  useEffect(() => {
-    // Hand off from native splash to JS — same artwork, no flash
-    void SplashScreen.hideAsync();
-  }, []);
-
   return (
     <View style={styles.root}>
       <Image

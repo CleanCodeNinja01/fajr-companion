@@ -2,6 +2,12 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
+jest.mock('expo-constants', () => ({
+  expoConfig: { extra: {} },
+  appOwnership: 'standalone',
+  executionEnvironment: 'standalone',
+}));
+
 jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(),
   setNotificationChannelAsync: jest.fn(async () => undefined),

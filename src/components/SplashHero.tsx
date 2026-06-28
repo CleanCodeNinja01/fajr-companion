@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     writingDirection: 'rtl',
   },
-  appName: { fontSize: 12, fontWeight: '300', color: Colors.headerText, letterSpacing: 6 },
+  appName: { fontSize: 12, fontWeight: '300', color: Colors.headerText, letterSpacing: 4 },
   tagline: { fontSize: 12, color: Colors.textMuted, textAlign: 'center',
              lineHeight: 20, marginTop: 2, paddingHorizontal: 24 },
 });

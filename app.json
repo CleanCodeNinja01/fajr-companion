@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "cover",
+      "resizeMode": "contain",
       "backgroundColor": "#1A0E12"
     },
     "assetBundlePatterns": ["**/*"],
@@ -61,7 +61,18 @@
         {
           "backgroundColor": "#1A0E12",
           "image": "./assets/splash.png",
-          "resizeMode": "cover"
+          "imageWidth": 320,
+          "resizeMode": "contain",
+          "android": {
+            "backgroundColor": "#1A0E12",
+            "image": "./assets/splash.png",
+            "resizeMode": "contain"
+          },
+          "ios": {
+            "backgroundColor": "#1A0E12",
+            "image": "./assets/splash.png",
+            "resizeMode": "contain"
+          }
         }
       ]
     ]

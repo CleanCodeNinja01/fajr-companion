@@ -3,10 +3,15 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
-    "start": "expo start --dev-client",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "test": "jest"
+    "start": "bash scripts/with-android-env.sh expo start --dev-client",
+    "start:ios": "expo start --dev-client --ios",
+    "start:android": "bash scripts/with-android-env.sh expo start --dev-client --android",
+    "android": "bash scripts/with-android-env.sh env LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 bash -c 'node scripts/patch-android-splash.js && expo run:android'",
+    "ios": "LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 expo run:ios",
+    "test": "jest",
+    "generate:assets": "node scripts/generate-brand-assets.mjs",
+    "postprebuild": "node scripts/patch-android-splash.js",
+    "postinstall": "node scripts/patch-android-splash.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -39,6 +44,7 @@
     "@types/react": "~19.1.10",
     "jest": "^29.7.0",
     "jest-expo": "~54.0.0",
+    "sharp": "^0.35.2",
     "typescript": "~5.9.2"
   },
   "private": true

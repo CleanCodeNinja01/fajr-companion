@@ -12,7 +12,7 @@ interface Props {
 const SIZES = {
   sm: { box: 56,  ar: 20, en: 11 },
   md: { box: 84,  ar: 28, en: 15 },
-  lg: { box: 130, ar: 44, en: 20 },
+  lg: { box: 140, ar: 44, en: 20 },
 };
 
 export default function AppLogo({

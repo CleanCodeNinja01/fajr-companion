@@ -3,7 +3,7 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import * as Notifications from 'expo-notifications';
+import { getNotificationsModule, isNotificationsSupported } from './src/services/notificationsModule';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -33,6 +33,11 @@ export default function App() {
     }
     bootstrap();
 
+    if (!isNotificationsSupported()) return;
+
+    const Notifications = getNotificationsModule();
+    if (!Notifications) return;
+
     const sub = Notifications.addNotificationResponseReceivedListener(response => {
       const data = response.notification.request.content.data as { type?: string };
       if (data?.type === 'fajr_alarm') {
@@ -45,10 +50,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (appReady) {
+    if (appReady && initialRoute) {
       void SplashScreen.hideAsync();
     }
-  }, [appReady]);
+  }, [appReady, initialRoute]);
 
   if (!appReady || !initialRoute) {
     return (

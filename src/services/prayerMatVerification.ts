@@ -1,6 +1,22 @@
 // Heuristic prayer-mat check from photo colors (pattern + texture cues, offline)
-import { Image, NativeModules } from 'react-native';
-import type { ImageColorsResult } from 'react-native-image-colors';
+import { Image } from 'react-native';
+
+/** Minimal shape from react-native-image-colors — defined locally so we never import that package at load time. */
+type ImageColorsResult = {
+  platform: 'ios' | 'android' | 'web';
+  background?: string;
+  primary?: string;
+  secondary?: string;
+  detail?: string;
+  dominant?: string;
+  average?: string;
+  vibrant?: string;
+  darkVibrant?: string;
+  lightVibrant?: string;
+  muted?: string;
+  darkMuted?: string;
+  lightMuted?: string;
+};
 
 export type PrayerMatVerification = {
   verified: boolean;
@@ -56,17 +72,23 @@ function paletteFromResult(result: ImageColorsResult): string[] {
   ];
 }
 
-function imageColorsNativeAvailable(): boolean {
-  return Boolean(NativeModules.ImageColors);
+type ImageColorsModule = {
+  getColors: (uri: string, config: object) => Promise<ImageColorsResult>;
+};
+
+/** Load only when the native module exists (dev build). require() throws in Expo Go. */
+function loadImageColorsModule(): ImageColorsModule | null {
+  try {
+    return require('react-native-image-colors').default as ImageColorsModule;
+  } catch {
+    return null;
+  }
 }
 
 async function extractPalette(uri: string): Promise<string[] | null> {
-  if (!imageColorsNativeAvailable()) return null;
+  const ImageColors = loadImageColorsModule();
+  if (!ImageColors) return null;
   try {
-    // Lazy require — avoids crash when dev client was not rebuilt after install
-    const ImageColors = require('react-native-image-colors').default as {
-      getColors: (u: string, c: object) => Promise<ImageColorsResult>;
-    };
     const result = await ImageColors.getColors(uri, {
       fallback: '#3D2030',
       cache: false,
