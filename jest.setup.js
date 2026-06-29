@@ -35,7 +35,7 @@ jest.mock('react-native-image-colors', () => ({
       quality: 'low',
     })),
   },
-}));
+}), { virtual: true });
 
 jest.mock('tz-lookup', () => jest.fn((lat, lon) => {
   if (lat > 50 && lon > -10 && lon < 2) return 'Europe/Dublin';

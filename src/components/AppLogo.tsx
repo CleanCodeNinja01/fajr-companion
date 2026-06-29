@@ -10,26 +10,29 @@ interface Props {
 }
 
 const SIZES = {
-  sm: { box: 56,  ar: 20, en: 11 },
-  md: { box: 84,  ar: 28, en: 15 },
-  lg: { box: 140, ar: 44, en: 20 },
+  sm: { box: 44,  ar: 20, en: 11 },
+  md: { box: 72,  ar: 28, en: 15 },
+  lg: { box: 128, ar: 44, en: 20 },
 };
 
 export default function AppLogo({
   size = 'md',
   variant = 'dark',
   showTitle = false,
-}: Props) {
+  elevated = false,
+}: Props & { elevated?: boolean }) {
   const s = SIZES[size];
   const isDark = variant === 'dark';
 
   return (
     <View style={styles.wrapper}>
-      <Image
-        source={require('../../assets/icon.png')}
-        style={{ width: s.box, height: s.box }}
-        resizeMode="contain"
-      />
+      <View style={[styles.imageWrap, elevated && styles.imageWrapElevated]}>
+        <Image
+          source={require('../../assets/icon.png')}
+          style={{ width: s.box, height: s.box }}
+          resizeMode="contain"
+        />
+      </View>
 
       {showTitle && (
         <View style={styles.titleBlock}>
@@ -52,7 +55,15 @@ export default function AppLogo({
 }
 
 const styles = StyleSheet.create({
-  wrapper:    { alignItems: 'center', gap: 6 },
+  wrapper:           { alignItems: 'center', gap: 6 },
+  imageWrap:         { overflow: 'hidden', borderRadius: 14 },
+  imageWrapElevated: {
+    borderWidth: 0.5,
+    borderColor: 'rgba(232,168,95,0.35)',
+    backgroundColor: 'rgba(232,168,95,0.06)',
+    padding: 2,
+    borderRadius: 16,
+  },
   titleBlock: { alignItems: 'center', gap: 2 },
   arabic:     { fontWeight: '300', letterSpacing: 2, textAlign: 'center' },
   english:    { fontWeight: '300', letterSpacing: 5, textAlign: 'center' },

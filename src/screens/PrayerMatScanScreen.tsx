@@ -15,6 +15,7 @@ import { track } from '../services/analytics';
 import { AnalyticsEvents, streakBucket } from '../constants/AnalyticsEvents';
 import { verifyPrayerMatPhoto } from '../services/prayerMatVerification';
 import StarfieldBackground from '../components/StarfieldBackground';
+import AppBrandBar from '../components/AppBrandBar';
 
 const CARD_BG  = '#1E0F14';
 const CARD_BDR = '#3D2030';
@@ -30,10 +31,10 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const { incrementStreak } = useStreak();
 
-  async function analyzePhoto(uri: string) {
+  async function analyzePhoto(base64: string) {
     setVerification('checking');
     setVerificationMessage('');
-    const result = await verifyPrayerMatPhoto(uri);
+    const result = await verifyPrayerMatPhoto(base64);
     if (result.verified) {
       setVerification('verified');
       setVerificationMessage(result.message);
@@ -53,26 +54,30 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
       mediaTypes: ['images'],
       quality: 0.6,
       allowsEditing: false,
+      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
-      const uri = result.assets[0].uri;
+      const { uri, base64 } = result.assets[0];
       setPhotoUri(uri);
-      await analyzePhoto(uri);
+      if (!base64) {
+        setVerification('failed');
+        setVerificationMessage('Could not read photo data. Please try again.');
+        return;
+      }
+      await analyzePhoto(base64);
     }
   }
 
-  const canConfirm =
-    verification === 'verified' ||
-    (__DEV__ && photoUri !== null && verification !== 'checking');
+  const canConfirm = verification === 'verified';
 
   async function handleConfirm() {
-    if (verification !== 'verified' && !__DEV__) return;
+    if (verification !== 'verified') return;
     setLoading(true);
     try {
       const updated = await incrementStreak();
       void track(AnalyticsEvents.FAJR_CONFIRMED, {
         streak_bucket: streakBucket(updated.count),
-        mat_verified: verification === 'verified',
+        mat_verified: true,
       });
       navigation.replace('Confirmation');
     } catch {
@@ -87,14 +92,14 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
 
     const isChecking = verification === 'checking';
     const isVerified = verification === 'verified';
-    const isFailed = verification === 'failed';
+    const isFailed   = verification === 'failed';
 
     return (
       <View
         style={[
           styles.verificationCard,
           isVerified && styles.verificationVerified,
-          isFailed && styles.verificationFailed,
+          isFailed   && styles.verificationFailed,
         ]}
       >
         {isChecking ? (
@@ -110,7 +115,7 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
           <Text style={styles.verificationTitle}>
             {isChecking && 'Checking for prayer mat…'}
             {isVerified && 'Prayer mat verified'}
-            {isFailed && 'Not verified yet'}
+            {isFailed   && 'Not verified yet'}
           </Text>
           {!isChecking && verificationMessage ? (
             <Text style={styles.verificationMessage}>{verificationMessage}</Text>
@@ -128,6 +133,7 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <StarfieldBackground />
+      <AppBrandBar centered />
 
       {/* Camera viewfinder area */}
       <View style={styles.viewfinder}>
@@ -173,10 +179,6 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
             {loading ? 'Saving...' : "Confirm I'm up for Fajr"}
           </Text>
         </TouchableOpacity>
-
-        {__DEV__ && photoUri && verification === 'failed' && (
-          <Text style={styles.devHint}>Dev: you can still confirm to test the flow</Text>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -212,5 +214,4 @@ const styles = StyleSheet.create({
   confirmBtn:           { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   confirmBtnDisabled:   { backgroundColor: CARD_BDR },
   confirmBtnText:       { fontSize: 15, fontWeight: '500', color: Colors.white },
-  devHint:              { fontSize: 11, color: Colors.textMuted, textAlign: 'center' },
 });

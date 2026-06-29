@@ -16,6 +16,7 @@ import { rescheduleFajrAlarmIfEnabled } from '../services/alarmScheduling';
 import { withTimezone } from '../services/locationService';
 import { previewAlarmSound, stopAlarmSound } from '../services/alarmSoundService';
 import StarfieldBackground from '../components/StarfieldBackground';
+import AppBrandBar from '../components/AppBrandBar';
 
 const CARD_BG  = '#1E0F14';
 const CARD_BDR = '#3D2030';
@@ -87,14 +88,11 @@ export default function AlarmSettingsScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StarfieldBackground />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="arrow-back" size={22} color={Colors.light} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Alarm Settings</Text>
-        <View style={{ width: 22 }} />
-      </View>
+      <AppBrandBar
+        title="Alarm Settings"
+        showBack
+        onBack={() => navigation.goBack()}
+      />
 
       <ScrollView contentContainerStyle={styles.body}>
         {/* Wake offset */}
@@ -215,30 +213,28 @@ export default function AlarmSettingsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe:          { flex: 1, backgroundColor: Colors.darkBg },
-  header:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  headerTitle:   { fontSize: 15, fontWeight: '500', color: Colors.white },
-  body:          { padding: 16, gap: 8, paddingBottom: 40 },
-  sectionLabel:  { fontSize: 10, fontWeight: '500', color: Colors.textMuted, letterSpacing: 0.6, marginTop: 6 },
-  card:          { backgroundColor: CARD_BG, borderRadius: 12, borderWidth: 0.5, borderColor: CARD_BDR, paddingHorizontal: 14 },
-  radioRow:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 13 },
-  rowBorder:     { borderBottomWidth: 0.5, borderBottomColor: CARD_BDR },
-  radioLabel:    { fontSize: 13, color: Colors.white },
-  radio:         { width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, borderColor: CARD_BDR },
-  radioActive:   { backgroundColor: Colors.accent, borderColor: Colors.accent },
-  stepper:       { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  stepBtn:       { width: 28, height: 28, borderRadius: 8, borderWidth: 0.5, borderColor: CARD_BDR, alignItems: 'center', justifyContent: 'center' },
-  stepBtnText:   { fontSize: 16, color: Colors.textMuted },
-  stepCount:     { fontSize: 15, fontWeight: '500', color: Colors.white, minWidth: 20, textAlign: 'center' },
-  soundRow:      { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  previewBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                   paddingVertical: 12, marginTop: 4 },
-  previewBtnText:{ fontSize: 13, color: Colors.gold, fontWeight: '500' },
-  devBtn:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                   paddingVertical: 10, marginTop: 2 },
-  devBtnText:    { fontSize: 12, color: Colors.textMuted },
-  saveBtn:       { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
-  saveBtnText:   { fontSize: 15, fontWeight: '500', color: Colors.white },
-  resetBtn:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 },
-  resetBtnText:  { fontSize: 12, color: Colors.textMuted },
+  safe:           { flex: 1, backgroundColor: Colors.darkBg },
+  body:           { padding: 16, gap: 8, paddingBottom: 40 },
+  sectionLabel:   { fontSize: 10, fontWeight: '500', color: Colors.textMuted, letterSpacing: 0.6, marginTop: 6 },
+  card:           { backgroundColor: CARD_BG, borderRadius: 12, borderWidth: 0.5, borderColor: CARD_BDR, paddingHorizontal: 14, paddingVertical: 12 },
+  radioRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 13 },
+  rowBorder:      { borderBottomWidth: 0.5, borderBottomColor: CARD_BDR },
+  radioLabel:     { fontSize: 13, color: Colors.white },
+  radio:          { width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, borderColor: CARD_BDR },
+  radioActive:    { backgroundColor: Colors.accent, borderColor: Colors.accent },
+  stepper:        { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  stepBtn:        { width: 28, height: 28, borderRadius: 8, borderWidth: 0.5, borderColor: CARD_BDR, alignItems: 'center', justifyContent: 'center' },
+  stepBtnText:    { fontSize: 16, color: Colors.textMuted },
+  stepCount:      { fontSize: 15, fontWeight: '500', color: Colors.white, minWidth: 20, textAlign: 'center' },
+  soundRow:       { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  previewBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    paddingVertical: 12, marginTop: 4 },
+  previewBtnText: { fontSize: 13, color: Colors.gold, fontWeight: '500' },
+  devBtn:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    paddingVertical: 10, marginTop: 2 },
+  devBtnText:     { fontSize: 12, color: Colors.textMuted },
+  saveBtn:        { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  saveBtnText:    { fontSize: 15, fontWeight: '500', color: Colors.white },
+  resetBtn:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 },
+  resetBtnText:   { fontSize: 12, color: Colors.textMuted },
 });

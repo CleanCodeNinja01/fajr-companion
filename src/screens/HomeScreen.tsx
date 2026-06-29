@@ -14,6 +14,7 @@ import { RootStackParamList, WakeOffset, LocationData, CitySuggestion } from '..
 import FajrTimeCard from '../components/FajrTimeCard';
 import WakeOffsetSelector from '../components/WakeOffsetSelector';
 import StarfieldBackground from '../components/StarfieldBackground';
+import AppBrandBar from '../components/AppBrandBar';
 import CityAutocomplete from '../components/CityAutocomplete';
 import { useAlarmSettings } from '../hooks/useAlarmSettings';
 import { useFajrTime } from '../hooks/useFajrTime';
@@ -209,6 +210,7 @@ export default function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StarfieldBackground />
+      <AppBrandBar centered />
       <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
         <FajrTimeCard
           todayFajr={todayFajr}

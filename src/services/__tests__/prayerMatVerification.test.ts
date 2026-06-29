@@ -1,29 +1,97 @@
-import { scorePrayerMatPalette } from '../prayerMatVerification';
+import { verifyPrayerMatPhoto } from '../prayerMatVerification';
 
-describe('scorePrayerMatPalette', () => {
-  it('accepts a multi-color patterned palette', () => {
-    const result = scorePrayerMatPalette([
-      '#8B1E2D',
-      '#1E3A5F',
-      '#C9A227',
-      '#F5E6D3',
+const FAKE_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+function mockVision(labels: Array<{ description: string; score: number }>, status = 200) {
+  global.fetch = jest.fn().mockResolvedValueOnce({
+    ok: status === 200,
+    status,
+    text: () => Promise.resolve('error'),
+    json: () => Promise.resolve({
+      responses: [{ labelAnnotations: labels }],
+    }),
+  } as unknown as Response);
+}
+
+beforeEach(() => {
+  process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY = 'test-key';
+});
+
+afterEach(() => {
+  jest.resetAllMocks();
+});
+
+describe('verifyPrayerMatPhoto', () => {
+  it('verifies when a high-confidence rug label is returned', async () => {
+    mockVision([
+      { description: 'Prayer rug', score: 0.94 },
+      { description: 'Textile', score: 0.88 },
     ]);
 
+    const result = await verifyPrayerMatPhoto(FAKE_BASE64);
+
     expect(result.verified).toBe(true);
-    expect(result.confidence).toBeGreaterThanOrEqual(55);
+    expect(result.confidence).toBeGreaterThanOrEqual(70);
   });
 
-  it('rejects a flat gray photo', () => {
-    const result = scorePrayerMatPalette(['#808080', '#7E7E7E', '#828282']);
+  it('verifies on a generic carpet label with high score', async () => {
+    mockVision([
+      { description: 'Carpet', score: 0.91 },
+      { description: 'Floor', score: 0.75 },
+    ]);
 
-    expect(result.verified).toBe(false);
-    expect(result.message).toMatch(/patterned surface|prayer mat/i);
+    const result = await verifyPrayerMatPhoto(FAKE_BASE64);
+
+    expect(result.verified).toBe(true);
   });
 
-  it('rejects a very dark photo', () => {
-    const result = scorePrayerMatPalette(['#050505', '#0A0A0A', '#030303']);
+  it('rejects when no mat-related labels are returned', async () => {
+    mockVision([
+      { description: 'Wall', score: 0.97 },
+      { description: 'Green', score: 0.85 },
+    ]);
+
+    const result = await verifyPrayerMatPhoto(FAKE_BASE64);
 
     expect(result.verified).toBe(false);
-    expect(result.message).toMatch(/too dark/i);
+    expect(result.message).toMatch(/no prayer mat/i);
+  });
+
+  it('rejects when mat label is present but confidence is too low', async () => {
+    mockVision([
+      { description: 'Rug', score: 0.45 },
+    ]);
+
+    const result = await verifyPrayerMatPhoto(FAKE_BASE64);
+
+    expect(result.verified).toBe(false);
+    expect(result.message).toMatch(/confidence too low/i);
+  });
+
+  it('returns error when API key is missing', async () => {
+    process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY = '';
+
+    const result = await verifyPrayerMatPhoto(FAKE_BASE64);
+
+    expect(result.verified).toBe(false);
+    expect(result.message).toMatch(/EXPO_PUBLIC_GOOGLE_VISION_API_KEY/i);
+  });
+
+  it('returns error when fetch throws', async () => {
+    global.fetch = jest.fn().mockRejectedValueOnce(new Error('Network error'));
+
+    const result = await verifyPrayerMatPhoto(FAKE_BASE64);
+
+    expect(result.verified).toBe(false);
+    expect(result.message).toMatch(/connection/i);
+  });
+
+  it('returns error on non-200 response', async () => {
+    mockVision([], 403);
+
+    const result = await verifyPrayerMatPhoto(FAKE_BASE64);
+
+    expect(result.verified).toBe(false);
+    expect(result.message).toMatch(/service error/i);
   });
 });

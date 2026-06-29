@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Colors } from '../constants/Colors';
 import { RootStackParamList } from '../types';
@@ -12,6 +11,8 @@ import { toISODate } from '../services/prayerTimes';
 import StreakCard from '../components/StreakCard';
 import MorningChecklist from '../components/MorningChecklist';
 import StarfieldBackground from '../components/StarfieldBackground';
+import AppBrandBar from '../components/AppBrandBar';
+import AppLogo from '../components/AppLogo';
 
 type Props = { navigation: StackNavigationProp<RootStackParamList, 'Confirmation'> };
 
@@ -37,11 +38,9 @@ export default function ConfirmationScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <StarfieldBackground />
+      <AppBrandBar centered />
       <ScrollView contentContainerStyle={styles.body}>
-        {/* Success icon */}
-        <View style={styles.iconWrap}>
-          <Ionicons name="checkmark-circle" size={32} color={Colors.gold} />
-        </View>
+        <AppLogo size="md" elevated />
         <Text style={styles.title}>Alhamdulillah</Text>
         <Text style={styles.subtitle}>You woke up for Fajr today.</Text>
 
@@ -63,7 +62,6 @@ export default function ConfirmationScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safe:       { flex: 1, backgroundColor: Colors.darkBg },
   body:       { padding: 24, gap: 14, alignItems: 'center', paddingBottom: 40 },
-  iconWrap:   { width: 64, height: 64, backgroundColor: 'rgba(232,168,95,0.1)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 0.5, borderColor: 'rgba(232,168,95,0.3)' },
   title:      { fontSize: 22, fontWeight: '500', color: Colors.white },
   subtitle:   { fontSize: 13, color: Colors.textMuted, marginTop: -6 },
   doneBtn:    { backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 14, alignItems: 'center', width: '100%', marginTop: 4 },
