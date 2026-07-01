@@ -31,10 +31,10 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const { incrementStreak } = useStreak();
 
-  async function analyzePhoto(base64: string) {
+  async function analyzePhoto(uri: string) {
     setVerification('checking');
     setVerificationMessage('');
-    const result = await verifyPrayerMatPhoto(base64);
+    const result = await verifyPrayerMatPhoto(uri);
     if (result.verified) {
       setVerification('verified');
       setVerificationMessage(result.message);
@@ -54,17 +54,11 @@ export default function PrayerMatScanScreen({ navigation }: Props) {
       mediaTypes: ['images'],
       quality: 0.6,
       allowsEditing: false,
-      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
-      const { uri, base64 } = result.assets[0];
+      const uri = result.assets[0].uri;
       setPhotoUri(uri);
-      if (!base64) {
-        setVerification('failed');
-        setVerificationMessage('Could not read photo data. Please try again.');
-        return;
-      }
-      await analyzePhoto(base64);
+      await analyzePhoto(uri);
     }
   }
 
